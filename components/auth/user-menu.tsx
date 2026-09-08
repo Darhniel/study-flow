@@ -1,18 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
+import { useConvexAuth } from "@convex-dev/auth/react";
 import { api } from "@/convex/_generated/api";
 import { User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function UserMenu() {
-    const { signOut } = useAuthActions();
-    const user = useQuery(api.users.viewer);
-    const [open, setOpen] = useState(false);
+    const { isLoading, isAuthenticated } = useConvexAuth();
 
+    if (isLoading || !isAuthenticated) {
+        return null;
+    }
+    
+    return <UserMenuContent />;
+}
+
+function UserMenuContent() {
+    const { signOut } = useAuthActions();
+    const [open, setOpen] = useState(false);
+    const user = useQuery(api.users.viewer);
+    
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                setOpen(false);
+            }
+        };
+        document.addEventListener("keydown", handleKeyDown);
+        return () => document.removeEventListener("keydown", handleKeyDown);
+    }, []);
+    
     if (!user) return null;
 
     return (
@@ -25,7 +46,7 @@ export function UserMenu() {
                 aria-haspopup="true"
             >
                 <User className="h-4 w-4" />
-                <span className="hidden sm:inline">{user.email}</span>
+                <span className="lg:hidden sm:inline">{user.email}</span>
             </Button>
 
             <AnimatePresence>
@@ -41,7 +62,7 @@ export function UserMenu() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -4 }}
                             transition={{ duration: 0.15 }}
-                            className="absolute right-0 top-full mt-2 z-50 w-48 rounded-md border bg-background shadow-lg"
+                            className="absolute left-0 top-full mt-2 z-50 w-48 rounded-md border bg-background shadow-lg"
                             role="menu"
                         >
                             <div className="p-3 border-b">

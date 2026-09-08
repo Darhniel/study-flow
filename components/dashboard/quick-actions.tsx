@@ -42,8 +42,8 @@ export function QuickActions() {
                         const Icon = action.icon;
                         return (
                             <motion.div key={action.href} variants={staggerItem}>
-                                <Button asChild variant={action.primary ? "default" : "outline"}>
-                                    <Link href={action.href}>
+                                <Button variant={action.primary ? "default" : "outline"}>
+                                    <Link href={action.href} className="flex items-center gap-1">
                                         <Icon className="h-4 w-4" />
                                         {action.label}
                                     </Link>

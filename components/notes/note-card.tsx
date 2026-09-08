@@ -103,8 +103,8 @@ export function NoteCard({ note, onDeleted }: NoteCardProps) {
                                     </>
                                 )}
                             </Button>
-                            <Button variant="outline" size="sm" asChild>
-                                <Link href={`/notes/${note._id}`}>
+                            <Button variant="outline" size="sm">
+                                <Link href={`/notes/${note._id}`} className="flex items-center gap-2">
                                     <Pencil className="h-3.5 w-3.5" />
                                     Edit
                                 </Link>

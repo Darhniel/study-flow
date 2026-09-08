@@ -67,8 +67,8 @@ export default function NotesPage() {
                         All your study notes in one place.
                     </p>
                 </div>
-                <Button asChild>
-                    <Link href="/notes/new">
+                <Button>
+                    <Link href="/notes/new" className="flex items-center gap-2">
                         <Plus className="h-4 w-4" />
                         New Note
                     </Link>

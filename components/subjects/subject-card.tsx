@@ -11,6 +11,8 @@ import { SubjectDialog } from "./subject-dialog";
 import { formatDate } from "@/lib/utils";
 import { toast } from "@/lib/toast";
 import { staggerItem } from "@/lib/animations";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 
 interface SubjectCardProps {
@@ -26,8 +28,20 @@ interface SubjectCardProps {
 }
 
 export function SubjectCard({ subject, onDeleted, onRenamed }: SubjectCardProps) {
+    const removeSubject = useMutation(api.subjects.remove);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [renameOpen, setRenameOpen] = useState(false);
+
+    const handleDelete = async () => {
+        try {
+            await removeSubject({ id: subject._id });
+            toast("Subject deleted");
+            setDeleteOpen(false);
+            onDeleted?.();
+        } catch (err) {
+            toast((err as Error).message || "Failed to delete subject", "error");
+        }
+    };
 
     return (
         <>
@@ -103,19 +117,7 @@ export function SubjectCard({ subject, onDeleted, onRenamed }: SubjectCardProps)
                 title="Delete subject?"
                 description={`This will permanently delete "${subject.name}". This action cannot be undone.`}
                 confirmLabel="Delete"
-                onConfirm={async () => {
-                    try {
-                        const { remove } = await import("@/convex/_generated/api").then(
-                            (m) => m.api.subjects
-                        );
-                        const { useMutation } = await import("convex/react");
-                        // This is handled by the parent component
-                        setDeleteOpen(false);
-                        onDeleted?.();
-                    } catch (err) {
-                        toast((err as Error).message || "Failed to delete subject", "error");
-                    }
-                }}
+                onConfirm={handleDelete}
             />
         </>
     );

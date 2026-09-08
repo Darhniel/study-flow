@@ -1,11 +1,11 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { getAuthenticatedUser } from "./authHelpers";
+import { getAuthenticatedUserOrThrow } from "./authHelpers";
 
 export const getByNote = query({
   args: { noteId: v.id("notes") },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUser(ctx);
+    const userId = await getAuthenticatedUserOrThrow(ctx);
     const note = await ctx.db.get(args.noteId);
     if (!note || note.userId !== userId) return null;
 
@@ -30,7 +30,7 @@ export const save = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUser(ctx);
+    const userId = await getAuthenticatedUserOrThrow(ctx);
     const note = await ctx.db.get(args.noteId);
     if (!note || note.userId !== userId) {
       throw new Error("Note not found");
@@ -65,7 +65,7 @@ export const save = mutation({
 export const remove = mutation({
   args: { noteId: v.id("notes") },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUser(ctx);
+    const userId = await getAuthenticatedUserOrThrow(ctx);
     const note = await ctx.db.get(args.noteId);
     if (!note || note.userId !== userId) return;
 

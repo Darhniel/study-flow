@@ -1,7 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { noteStatus } from "./schema";
-import { getAuthenticatedUser } from "./authHelpers";
+import { getAuthenticatedUserOrThrow } from "./authHelpers";
 
 export const list = query({
   args: {
@@ -9,7 +9,7 @@ export const list = query({
     status: v.optional(noteStatus),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUser(ctx);
+    const userId = await getAuthenticatedUserOrThrow(ctx);
 
     if (args.subjectId) {
       const notes = await ctx.db
@@ -44,7 +44,7 @@ export const list = query({
 export const listRecentlyUpdated = query({
   args: { limit: v.number() },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUser(ctx);
+    const userId = await getAuthenticatedUserOrThrow(ctx);
     return await ctx.db
       .query("notes")
       .withIndex("by_user_updated", (q) => q.eq("userId", userId))
@@ -56,7 +56,7 @@ export const listRecentlyUpdated = query({
 export const listWithStudyMaterial = query({
   args: { limit: v.number() },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUser(ctx);
+    const userId = await getAuthenticatedUserOrThrow(ctx);
     const materials = await ctx.db
       .query("studyMaterials")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -81,7 +81,7 @@ export const listWithStudyMaterial = query({
 export const get = query({
   args: { id: v.id("notes") },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUser(ctx);
+    const userId = await getAuthenticatedUserOrThrow(ctx);
     const note = await ctx.db.get(args.id);
     if (!note || note.userId !== userId) return null;
     return note;
@@ -91,7 +91,7 @@ export const get = query({
 export const count = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthenticatedUser(ctx);
+    const userId = await getAuthenticatedUserOrThrow(ctx);
     const notes = await ctx.db
       .query("notes")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -103,7 +103,7 @@ export const count = query({
 export const countByStatus = query({
   args: { status: noteStatus },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUser(ctx);
+    const userId = await getAuthenticatedUserOrThrow(ctx);
     const notes = await ctx.db
       .query("notes")
       .withIndex("by_user_status", (q) =>
@@ -122,7 +122,7 @@ export const create = mutation({
     status: v.optional(noteStatus),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUser(ctx);
+    const userId = await getAuthenticatedUserOrThrow(ctx);
     const now = Date.now();
     return await ctx.db.insert("notes", {
       userId,
@@ -145,7 +145,7 @@ export const update = mutation({
     status: v.optional(noteStatus),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUser(ctx);
+    const userId = await getAuthenticatedUserOrThrow(ctx);
     const { id, ...fields } = args;
     const existing = await ctx.db.get(id);
     if (!existing || existing.userId !== userId) {
@@ -163,7 +163,7 @@ export const update = mutation({
 export const toggleStatus = mutation({
   args: { id: v.id("notes") },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUser(ctx);
+    const userId = await getAuthenticatedUserOrThrow(ctx);
     const note = await ctx.db.get(args.id);
     if (!note || note.userId !== userId) {
       throw new Error("Note not found");
@@ -179,7 +179,7 @@ export const toggleStatus = mutation({
 export const remove = mutation({
   args: { id: v.id("notes") },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUser(ctx);
+    const userId = await getAuthenticatedUserOrThrow(ctx);
     const note = await ctx.db.get(args.id);
     if (!note || note.userId !== userId) {
       throw new Error("Note not found");

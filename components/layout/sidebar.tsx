@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
 import { useSidebar } from "@/lib/hooks/use-sidebar";
 import { UserMenu } from "@/components/auth/user-menu";
+import { useConvexAuth } from "@convex-dev/auth/react";
 
 interface NavItem {
     label: string;
@@ -19,12 +20,17 @@ const navItems: NavItem[] = [
     { label: "Dashboard", href: "/", icon: LayoutDashboard },
     { label: "Notes", href: "/notes", icon: BookMarked },
     { label: "Subjects", href: "/subjects", icon: BookOpen },
-    { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function Sidebar() {
     const pathname = usePathname();
     const { isOpen, close } = useSidebar();
+
+    const { isLoading, isAuthenticated } = useConvexAuth();
+
+    if (isLoading || !isAuthenticated) {
+        return null;
+    }
 
     return (
         <>
@@ -36,7 +42,7 @@ export function Sidebar() {
             >
                 <div className="flex h-16 items-center justify-between border-b px-6 shrink-0">
                     <Logo />
-                    <UserMenu />
+                    {/* <UserMenu /> */}
                 </div>
                 <nav className="flex-1 overflow-y-auto px-3 py-4">
                     <ul className="space-y-1">
@@ -65,9 +71,12 @@ export function Sidebar() {
                         })}
                     </ul>
                 </nav>
-                <div className="border-t p-4 text-xs text-muted-foreground shrink-0">
-                    StudyFlow · v0.1
+                <div className="border-t p-4 shrink-0">
+                    <UserMenu />
                 </div>
+                {/* <div className="border-t p-4 text-xs text-muted-foreground shrink-0">
+                    StudyFlow · v0.1
+                </div> */}
             </aside>
 
             {/* Mobile sidebar */}

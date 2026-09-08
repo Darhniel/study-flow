@@ -1,13 +1,16 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import {authTables} from "@convex-dev/auth/server";
 
 export const noteStatus = v.union(v.literal("active"), v.literal("completed"));
 
 export default defineSchema({
+  ...authTables,
+
   users: defineTable({
     email: v.string(),
     name: v.optional(v.string()),
-    createdAt: v.number(),
+    createdAt: v.optional(v.number()),
   }).index("by_email", ["email"]),
 
   subjects: defineTable({

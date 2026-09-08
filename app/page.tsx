@@ -1,8 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useQuery } from "convex/react";
+import { useQuery, } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useRouter } from "next/navigation";
+import { useConvexAuth } from "@convex-dev/auth/react";
+import { useEffect } from "react";
 import { BookMarked, CheckCircle2, Circle, FolderOpen } from "lucide-react";
 import { StatsCard } from "@/components/notes/stats-card";
 import { RecentNotes } from "@/components/dashboard/recent-notes";
@@ -13,13 +16,31 @@ import { Card, CardContent } from "@/components/ui/card";
 import { fadeIn, staggerContainer } from "@/lib/animations";
 
 export default function DashboardPage() {
+  const { isLoading, isAuthenticated } = useConvexAuth();
+  const router = useRouter();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  // useEffect(() => {
+  //   if (!isLoading && !isAuthenticated) {
+  //     router.push("/signin");
+  //   }
+  // }, [isLoading, isAuthenticated, router]);
+
+  return (
+    <DashboardContent />
+  )
+}
+
+function DashboardContent() {
   const totalNotes = useQuery(api.notes.count) ?? 0;
   const activeNotes = useQuery(api.notes.countByStatus, { status: "active" }) ?? 0;
   const completedNotes = useQuery(api.notes.countByStatus, { status: "completed" }) ?? 0;
   const subjectsCount = useQuery(api.subjects.count) ?? 0;
   const recentNotes = useQuery(api.notes.listRecentlyUpdated, { limit: 5 }) ?? [];
   const notesWithMaterial = useQuery(api.notes.listWithStudyMaterial, { limit: 3 }) ?? [];
-
   return (
     <motion.div
       variants={fadeIn}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, use } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -20,12 +20,13 @@ import { fadeIn } from "@/lib/animations";
 import { useRouter } from "next/navigation";
 
 interface NotePageProps {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }
 
 export default function NotePage({ params }: NotePageProps) {
     const router = useRouter();
-    const noteId = params.id as Id<"notes">;
+    const resolvedParams = use(params);
+    const noteId = resolvedParams.id as Id<"notes">;
     const note = useQuery(api.notes.get, { id: noteId });
     const subjects = useQuery(api.subjects.list) ?? [];
     const toggleStatus = useMutation(api.notes.toggleStatus);
@@ -53,7 +54,7 @@ export default function NotePage({ params }: NotePageProps) {
                 <Card>
                     <CardContent className="p-10 text-center">
                         <p className="text-sm text-muted-foreground">Note not found.</p>
-                        <Button asChild className="mt-4" variant="outline">
+                        <Button className="mt-4" variant="outline">
                             <Link href="/notes">Back to notes</Link>
                         </Button>
                     </CardContent>
@@ -113,7 +114,7 @@ export default function NotePage({ params }: NotePageProps) {
             animate="visible"
             className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8 space-y-6"
         >
-            <Button variant="ghost" size="sm" asChild className="-ml-2">
+            <Button variant="ghost" size="sm" className="-ml-2">
                 <Link href="/notes">
                     <ArrowLeft className="h-4 w-4" />
                     Back to notes
@@ -124,7 +125,7 @@ export default function NotePage({ params }: NotePageProps) {
                 <CardHeader>
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                            <CardTitle className="text-xl break-words">{note.title}</CardTitle>
+                            <CardTitle className="text-xl wrap-break-word">{note.title}</CardTitle>
                             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                                 <span className="truncate">{subjectName ?? "No subject"}</span>
                                 <span aria-hidden="true">·</span>
@@ -137,7 +138,7 @@ export default function NotePage({ params }: NotePageProps) {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed break-words">
+                    <div className="whitespace-pre-wrap text-sm leading-relaxed wrap-break-word">
                         {note.content || <span className="text-muted-foreground">No content</span>}
                     </div>
 

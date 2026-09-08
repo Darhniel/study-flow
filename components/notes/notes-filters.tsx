@@ -31,9 +31,9 @@ export function NotesFilters({
     showSubjectFilter = true,
 }: NotesFiltersProps) {
     return (
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3 items-center">
             <div className="sm:col-span-3 md:col-span-1">
-                <Label htmlFor="search" className="sr-only">
+                <Label htmlFor="search" className="">
                     Search
                 </Label>
                 <div className="relative">

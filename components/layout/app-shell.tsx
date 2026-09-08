@@ -1,10 +1,10 @@
+"use client"
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { Sidebar } from "./sidebar";
 import { MobileNav } from "./mobile-nav";
 import { SidebarContext } from "@/lib/hooks/use-sidebar";
-import { AuthGate } from "@/components/auth/auth-gate";
-import { UserMenu } from "@/components/auth/user-menu";
+import { useConvexAuth } from "@convex-dev/auth/react";
 
 interface AppShellProps {
   children: ReactNode;
@@ -17,17 +17,20 @@ export function AppShell({ children }: AppShellProps) {
   const close = () => setSidebarOpen(false);
   const toggle = () => setSidebarOpen((prev) => !prev);
 
+  const { isLoading, isAuthenticated } = useConvexAuth();
+  const shouldRenderPadding = isLoading || !isAuthenticated; 
+
   return (
     <SidebarContext.Provider value={{ isOpen: sidebarOpen, open, close, toggle }}>
-      <AuthGate>
+      <>
         <div className="min-h-screen bg-background">
           <Sidebar />
-          <div className="lg:pl-60">
+          <div className={`${shouldRenderPadding ? "pl-0" : "lg:pl-60"} transition-all duration-300`}>
             <MobileNav />
             <main className="flex-1">{children}</main>
           </div>
         </div>
-      </AuthGate>
+      </>
     </SidebarContext.Provider>
   );
 }

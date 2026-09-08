@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, use } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -14,15 +14,20 @@ import { NotesLoading } from "@/components/notes/notes-loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 import { fadeIn } from "@/lib/animations";
+import { SubjectDialog } from "@/components/subjects/subject-dialog";
 
 interface SubjectPageProps {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }
 
 export default function SubjectPage({ params }: SubjectPageProps) {
-    const subjectId = params.id as Id<"subjects">;
+    const resolvedParams = use(params);
+    const subjectId = resolvedParams.id as Id<"subjects">;
     const subject = useQuery(api.subjects.get, { id: subjectId });
     const notes = useQuery(api.notes.list, { subjectId });
+
+    const [createOpen, setCreateOpen] = useState(false);
+
 
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("");
@@ -68,7 +73,7 @@ export default function SubjectPage({ params }: SubjectPageProps) {
             <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="rounded-lg border p-10 text-center">
                     <p className="text-sm text-muted-foreground">Subject not found.</p>
-                    <Button asChild className="mt-4" variant="outline">
+                    <Button className="mt-4" variant="outline">
                         <Link href="/subjects">Back to subjects</Link>
                     </Button>
                 </div>
@@ -83,7 +88,7 @@ export default function SubjectPage({ params }: SubjectPageProps) {
             animate="visible"
             className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8"
         >
-            <Button variant="ghost" size="sm" asChild className="-ml-2 mb-4">
+            <Button variant="ghost" size="sm" className="-ml-2 mb-4">
                 <Link href="/subjects">
                     <ArrowLeft className="h-4 w-4" />
                     Back to subjects
@@ -97,13 +102,17 @@ export default function SubjectPage({ params }: SubjectPageProps) {
                         {notes ? `${notes.length} notes` : "Loading…"}
                     </p>
                 </div>
-                <Button asChild>
-                    <Link href="/notes/new">
-                        <Plus className="h-4 w-4" />
-                        New Note
-                    </Link>
+                <Button onClick={() => setCreateOpen(true)}>
+                    <Plus className="h-4 w-4" />
+                    New Subject
                 </Button>
             </div>
+
+            <SubjectDialog
+                open={createOpen}
+                onOpenChange={setCreateOpen}
+                mode="create"
+            />
 
             <div className="mt-6">
                 <NotesFilters

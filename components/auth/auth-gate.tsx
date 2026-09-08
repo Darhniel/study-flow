@@ -7,18 +7,25 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface AuthGateProps {
     children: React.ReactNode;
+    redirectTo?: string;
 }
 
-export function AuthGate({ children }: AuthGateProps) {
+export function AuthGate({ children, redirectTo = "/login" }: AuthGateProps) {
     const { isAuthenticated, isLoading } = useConvexAuth();
     const router = useRouter();
     const pathname = usePathname();
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+            // router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+            if (pathname !== "/login" && pathname !== "/signup") {
+                // Properly encode the redirect URL
+                const redirectPath = encodeURIComponent(pathname);
+                router.push(redirectTo)
+                // router.push(`${redirectTo}?redirect=${redirectPath}`);
+            }
         }
-    }, [isLoading, isAuthenticated, router, pathname]);
+    }, [isLoading, isAuthenticated, router, pathname, redirectTo]);
 
     if (isLoading) {
         return (

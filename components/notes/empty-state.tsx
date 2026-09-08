@@ -27,7 +27,7 @@ export function EmptyState({
             <h3 className="mt-4 text-sm font-semibold">{title}</h3>
             <p className="mt-1 text-sm text-muted-foreground max-w-sm">{description}</p>
             {actionHref && (
-                <Button asChild className="mt-6">
+                <Button className="mt-6">
                     <Link href={actionHref}>{actionLabel}</Link>
                 </Button>
             )}

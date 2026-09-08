@@ -5,6 +5,10 @@ export const viewer = query({
     args: {},
     handler: async (ctx) => {
         const userId = await getAuthenticatedUser(ctx);
+        if (!userId) {
+            return null;
+        }
+
         const user = await ctx.db.get(userId);
         if (!user) return null;
         return {

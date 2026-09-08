@@ -75,14 +75,14 @@ export default function SubjectsPage() {
                 mode="create"
             />
 
-            <DeleteDialog
+            {/* <DeleteDialog
                 open={!!deleteTarget}
                 onOpenChange={(open) => !open && setDeleteTarget(null)}
                 title="Delete subject?"
                 description="This will permanently delete this subject. This action cannot be undone."
                 confirmLabel="Delete"
                 onConfirm={handleDelete}
-            />
+            /> */}
         </motion.div>
     );
 }

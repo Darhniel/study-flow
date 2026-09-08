@@ -3,14 +3,9 @@ import { env } from "./_generated/server";
 
 export default {
   providers: [
-    // {
-    //   domain: env.CONVEX_SITE_URL,
-    //   applicationID: "convex",
-    // },
     {
-      type: "function",
-      name: "password",
-      path: "./auth"
-    }
+      domain: process.env.CONVEX_SITE_URL!,
+      applicationID: "convex",
+    },
   ],
-} 
+} satisfies AuthConfig;
