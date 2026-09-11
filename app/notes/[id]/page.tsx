@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { Pencil, Trash2, CheckCircle2, Circle, ArrowLeft } from "lucide-react";
+import { Pencil, Trash2, CheckCircle2, Circle, ArrowLeft, FileText } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +63,8 @@ export default function NotePage({ params }: NotePageProps) {
         );
     }
 
+    const attachmentUrl = note.attachmentId ? useQuery(api.notes.getAttachmentUrl, { attachmentId: note.attachmentId }) : null;
+
     const handleToggle = async () => {
         try {
             await toggleStatus({ id: note._id });
@@ -101,6 +103,8 @@ export default function NotePage({ params }: NotePageProps) {
                             content: note.content,
                             subjectId: note.subjectId,
                         }}
+                        editing={editing}
+                        setEditing={setEditing}
                     />
                 </div>
             </motion.div>
@@ -115,7 +119,7 @@ export default function NotePage({ params }: NotePageProps) {
             className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8 space-y-6"
         >
             <Button variant="ghost" size="sm" className="-ml-2">
-                <Link href="/notes">
+                <Link href="/notes" className="flex items-center gap-1">
                     <ArrowLeft className="h-4 w-4" />
                     Back to notes
                 </Link>
@@ -183,6 +187,39 @@ export default function NotePage({ params }: NotePageProps) {
                 </CardContent>
             </Card>
 
+            <div className="whitespace-pre-wrap text-sm leading-relaxed wrap-break-word">
+                {note.content || <span className="text-muted-foreground">No text content</span>}
+            </div>
+
+            {note.attachmentId && (
+                attachmentUrl === undefined ? (
+                    <div className="mt-6 h-48 w-full rounded-lg bg-muted animate-pulse" />
+                ) : attachmentUrl ? (
+                    <div className="mt-6 border rounded-lg overflow-hidden">
+                        {note.attachmentType?.startsWith("image/") ? (
+                            <img
+                                src={attachmentUrl}
+                                alt={note.attachmentName || "Note attachment"}
+                                className="w-full h-auto max-h-150 object-contain bg-muted"
+                            />
+                        ) : (
+                            <div className="p-4 flex items-center gap-3 bg-secondary/50">
+                                <FileText className="h-8 w-8 text-muted-foreground" />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate">{note.attachmentName}</p>
+                                    <p className="text-xs text-muted-foreground">PDF Document</p>
+                                </div>
+                                <Button variant="outline" size="sm">
+                                    <a href={attachmentUrl} target="_blank" rel="noopener noreferrer" download={note.attachmentName}>
+                                        Download
+                                    </a>
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                ) : <></>
+            )}
+
             <GenerateStudyButton
                 noteId={note._id}
                 title={note.title}
@@ -198,5 +235,5 @@ export default function NotePage({ params }: NotePageProps) {
                 onConfirm={handleDelete}
             />
         </motion.div>
-    );
+    )
 }

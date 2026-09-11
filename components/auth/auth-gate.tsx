@@ -17,17 +17,11 @@ export function AuthGate({ children, redirectTo = "/login" }: AuthGateProps) {
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            // router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
-            if (pathname !== "/login" && pathname !== "/signup") {
-                // Properly encode the redirect URL
-                const redirectPath = encodeURIComponent(pathname);
-                router.push(redirectTo)
-                // router.push(`${redirectTo}?redirect=${redirectPath}`);
-            }
+            router.replace(redirectTo)
         }
-    }, [isLoading, isAuthenticated, router, pathname, redirectTo]);
+    }, [isLoading, isAuthenticated, router, pathname]);
 
-    if (isLoading) {
+    if (isLoading || !isAuthenticated) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="space-y-4 w-full max-w-md px-4">
@@ -38,9 +32,9 @@ export function AuthGate({ children, redirectTo = "/login" }: AuthGateProps) {
         );
     }
 
-    if (!isAuthenticated) {
-        return null;
-    }
+    // if (!isAuthenticated) {
+    //     return null;
+    // }
 
     return <>{children}</>;
 }

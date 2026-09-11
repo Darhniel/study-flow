@@ -15,16 +15,6 @@ interface RequestBody {
 }
 
 export async function POST(request: NextRequest) {
-    // const token = await getAuthToken();
-    // if (!token) {
-    //     return NextResponse.json(
-    //         { error: "Unauthorized - Please sign in" },
-    //         { status: 401 }
-    //     );
-    // }
-
-    // const userId = token.subject;
-
     let body: RequestBody;
     try {
         body = (await request.json()) as RequestBody;

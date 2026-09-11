@@ -23,8 +23,13 @@ interface NoteFormProps {
         title: string;
         content: string;
         subjectId?: Id<"subjects">;
+        attachmentId?: Id<"_storage">;
+        attachmentName?: string;
+        attachmentType?: string;
     };
     subjects: Subject[];
+    editing?: boolean;
+    setEditing?: (editing: boolean) => void;
 }
 
 interface FormErrors {
@@ -32,14 +37,17 @@ interface FormErrors {
     content?: string;
 }
 
-export function NoteForm({ initial, subjects }: NoteFormProps) {
+export function NoteForm({ initial, subjects, editing, setEditing }: NoteFormProps) {
     const router = useRouter();
     const createNote = useMutation(api.notes.create);
     const updateNote = useMutation(api.notes.update);
+    const generateUploadUrl = useMutation(api.uploads.generateUploadUrl);
 
     const [title, setTitle] = useState(initial?.title ?? "");
     const [content, setContent] = useState(initial?.content ?? "");
     const [subjectId, setSubjectId] = useState<string>(initial?.subjectId ?? "");
+    const [file, setFile] = useState<File | null>(null);
+    const [removeAttachment, setRemoveAttachment] = useState(false);
     const [errors, setErrors] = useState<FormErrors>({});
     const [submitting, setSubmitting] = useState(false);
 
@@ -56,11 +64,37 @@ export function NoteForm({ initial, subjects }: NoteFormProps) {
         if (!validate()) return;
         setSubmitting(true);
         try {
+            let attachmentId = initial?.attachmentId;
+            let attachmentName = initial?.attachmentName;
+            let attachmentType = initial?.attachmentType;
+
+            if (removeAttachment) {
+                attachmentId = undefined;
+                attachmentName = undefined;
+                attachmentType = undefined;
+            } else if (file) {
+                const uploadUrl = await generateUploadUrl();
+                const result = await fetch(uploadUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": file.type },
+                    body: file,
+                });
+                if (!result.ok) throw new Error("Failed to upload file");
+                const { storageId } = await result.json();
+                attachmentId = storageId;
+                attachmentName = file.name;
+                attachmentType = file.type;
+            }
+
             const payload = {
                 title: title.trim(),
                 content: content.trim(),
                 subjectId: (subjectId as Id<"subjects">) || undefined,
+                attachmentId,
+                attachmentName,
+                attachmentType,
             };
+
             if (initial) {
                 await updateNote({ id: initial.id, ...payload });
                 toast("Note updated");
@@ -78,8 +112,9 @@ export function NoteForm({ initial, subjects }: NoteFormProps) {
     };
 
     const handleCancel = () => {
-        if (initial) {
-            router.push(`/notes/${initial.id}`);
+        if (initial && setEditing) {
+            setEditing(false)
+            // router.push(`/notes/${initial.id}`);
         } else {
             router.push("/notes");
         }
@@ -122,6 +157,47 @@ export function NoteForm({ initial, subjects }: NoteFormProps) {
                                 </option>
                             ))}
                         </select>
+                    </div>
+
+                    <div>
+                        <Label htmlFor="attachment">Attachment (Image or PDF)</Label>
+                        <Input
+                            id="attachment"
+                            type="file"
+                            accept="image/png, image/jpeg, image/jpg, application/pdf"
+                            onChange={(e) => {
+                                setFile(e.target.files?.[0] || null);
+                                if (e.target.files?.[0]) setRemoveAttachment(false);
+                            }}
+                            className="mt-1"
+                        />
+                        {initial?.attachmentName && !file && !removeAttachment && (
+                            <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>Current file: {initial.attachmentName}</span>
+                                <button
+                                    type="button"
+                                    className="text-destructive underline hover:text-destructive/80"
+                                    onClick={() => setRemoveAttachment(true)}
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        )}
+                        {removeAttachment && (
+                            <p className="mt-1 text-xs text-destructive">
+                                Attachment will be removed on save.{" "}
+                                <button
+                                    type="button"
+                                    className="underline"
+                                    onClick={() => {
+                                        setRemoveAttachment(false);
+                                        setFile(null);
+                                    }}
+                                >
+                                    Undo
+                                </button>
+                            </p>
+                        )}
                     </div>
 
                     <div>

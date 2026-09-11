@@ -1,7 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { noteStatus } from "./schema";
-import { getAuthenticatedUserOrThrow } from "./authHelpers";
+import { getAuthenticatedUserId, requireAuth } from "./authHelpers";
 
 export const list = query({
   args: {
@@ -9,7 +9,8 @@ export const list = query({
     status: v.optional(noteStatus),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUserOrThrow(ctx);
+    const userId = await getAuthenticatedUserId(ctx);
+    if (!userId) return [];
 
     if (args.subjectId) {
       const notes = await ctx.db
@@ -44,7 +45,9 @@ export const list = query({
 export const listRecentlyUpdated = query({
   args: { limit: v.number() },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUserOrThrow(ctx);
+    const userId = await getAuthenticatedUserId(ctx);
+    if (!userId) return [];
+
     return await ctx.db
       .query("notes")
       .withIndex("by_user_updated", (q) => q.eq("userId", userId))
@@ -56,7 +59,9 @@ export const listRecentlyUpdated = query({
 export const listWithStudyMaterial = query({
   args: { limit: v.number() },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUserOrThrow(ctx);
+    const userId = await getAuthenticatedUserId(ctx);
+    if (!userId) return [];
+
     const materials = await ctx.db
       .query("studyMaterials")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -81,7 +86,9 @@ export const listWithStudyMaterial = query({
 export const get = query({
   args: { id: v.id("notes") },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUserOrThrow(ctx);
+    const userId = await getAuthenticatedUserId(ctx);
+    if (!userId) return null;
+
     const note = await ctx.db.get(args.id);
     if (!note || note.userId !== userId) return null;
     return note;
@@ -91,7 +98,9 @@ export const get = query({
 export const count = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthenticatedUserOrThrow(ctx);
+    const userId = await getAuthenticatedUserId(ctx);
+    if (!userId) return 0;
+
     const notes = await ctx.db
       .query("notes")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -103,7 +112,9 @@ export const count = query({
 export const countByStatus = query({
   args: { status: noteStatus },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUserOrThrow(ctx);
+    const userId = await getAuthenticatedUserId(ctx);
+    if (!userId) return 0;
+    
     const notes = await ctx.db
       .query("notes")
       .withIndex("by_user_status", (q) =>
@@ -114,21 +125,35 @@ export const countByStatus = query({
   },
 });
 
+export const getAttachmentUrl = query({
+  args: { attachmentId: v.id("_storage") },
+  handler: async (ctx, args) => {
+    return await ctx.storage.getUrl(args.attachmentId);
+  },
+});
+
 export const create = mutation({
   args: {
     title: v.string(),
     content: v.string(),
     subjectId: v.optional(v.id("subjects")),
+    attachmentId: v.optional(v.id("_storage")),
+    attachmentName: v.optional(v.string()),
+    attachmentType: v.optional(v.string()),
     status: v.optional(noteStatus),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUserOrThrow(ctx);
+    const userId = await requireAuth(ctx);
+
     const now = Date.now();
     return await ctx.db.insert("notes", {
       userId,
       title: args.title,
       content: args.content,
       subjectId: args.subjectId,
+      attachmentId: args.attachmentId,
+      attachmentName: args.attachmentName,
+      attachmentType: args.attachmentType,
       status: args.status ?? "active",
       createdAt: now,
       updatedAt: now,
@@ -142,10 +167,13 @@ export const update = mutation({
     title: v.optional(v.string()),
     content: v.optional(v.string()),
     subjectId: v.optional(v.id("subjects")),
+    attachmentId: v.optional(v.id("_storage")),
+    attachmentName: v.optional(v.string()),
+    attachmentType: v.optional(v.string()),
     status: v.optional(noteStatus),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUserOrThrow(ctx);
+    const userId = await requireAuth(ctx);
     const { id, ...fields } = args;
     const existing = await ctx.db.get(id);
     if (!existing || existing.userId !== userId) {
@@ -163,7 +191,7 @@ export const update = mutation({
 export const toggleStatus = mutation({
   args: { id: v.id("notes") },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUserOrThrow(ctx);
+    const userId = await requireAuth(ctx);
     const note = await ctx.db.get(args.id);
     if (!note || note.userId !== userId) {
       throw new Error("Note not found");
@@ -179,7 +207,7 @@ export const toggleStatus = mutation({
 export const remove = mutation({
   args: { id: v.id("notes") },
   handler: async (ctx, args) => {
-    const userId = await getAuthenticatedUserOrThrow(ctx);
+    const userId = await requireAuth(ctx);
     const note = await ctx.db.get(args.id);
     if (!note || note.userId !== userId) {
       throw new Error("Note not found");

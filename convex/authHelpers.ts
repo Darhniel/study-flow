@@ -1,9 +1,11 @@
-import { QueryCtx, MutationCtx } from "./_generated/server";
+import { QueryCtx, MutationCtx, ActionCtx } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
-import {getAuthUserId} from "@convex-dev/auth/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
-export async function getAuthenticatedUser(
-    ctx: QueryCtx | MutationCtx
+type AnyCtx = QueryCtx | MutationCtx | ActionCtx;
+
+export async function getAuthenticatedUserId(
+    ctx: AnyCtx
 ): Promise<Id<"users"> | null> {
     try {
         const userId = await getAuthUserId(ctx);
@@ -11,32 +13,44 @@ export async function getAuthenticatedUser(
             return null;
         }
 
-        const user = await ctx.db.get(userId);
-        if (!user) {
-            return null;
+        if ("db" in ctx) {
+            const user = await ctx.db.get(userId);
+            if (!user) {
+                return null;
+            }
         }
-
+        
         return userId;
     } catch (error) {
         console.error("Error getting authenticated user: ", error);
         return null;
     }
-    
+
 }
 
-export async function getAuthenticatedUserOrThrow(
-    ctx: QueryCtx | MutationCtx
+export async function requireAuth(
+    ctx: MutationCtx | ActionCtx
 ): Promise<Id<"users">> {
-    const userId = await getAuthenticatedUser(ctx);
+    const userId = await getAuthenticatedUserId(ctx);
     if (!userId) {
         throw new Error("Not authenticated");
     }
     return userId;
 }
 
-export async function getAuthenticatedUserId(
-    ctx: QueryCtx | MutationCtx
-): Promise<string | null> {
-    const userId = await getAuthenticatedUser(ctx);
-    return userId ?? null;
-}
+// export async function getAuthenticatedUserOrThrow(
+//     ctx: QueryCtx | MutationCtx | ActionCtx
+// ): Promise<Id<"users">> {
+//     const userId = await getAuthenticatedUser(ctx);
+//     if (!userId) {
+//         throw new Error("Not authenticated");
+//     }
+//     return userId;
+// }
+
+// export async function getAuthenticatedUserId(
+//     ctx: QueryCtx | MutationCtx | ActionCtx
+// ): Promise<string | null> {
+//     const userId = await getAuthenticatedUser(ctx);
+//     return userId ?? null;
+// }

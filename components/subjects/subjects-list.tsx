@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import type { Id } from "@/convex/_generated/dataModel";
 import { SubjectCard } from "./subject-card";
-import { EmptyState } from "@/components/notes/empty-state";
+import { EmptyState } from "@/components/subjects/empty-state";
 import { staggerContainer } from "@/lib/animations";
 
 interface SubjectItem {
@@ -18,19 +18,21 @@ interface SubjectsListProps {
     subjects: SubjectItem[];
     onSubjectDeleted?: () => void;
     onSubjectRenamed?: () => void;
+    createOpen?: boolean;
+    setCreateOpen: () => void
 }
 
 export function SubjectsList({
     subjects,
     onSubjectDeleted,
     onSubjectRenamed,
+    createOpen = false,
+    setCreateOpen,
 }: SubjectsListProps) {
     if (subjects.length === 0) {
         return (
             <EmptyState
-                title="No subjects yet"
-                description="Create your first subject to start organizing your notes."
-                actionLabel="Create subject"
+                setCreateOpen={setCreateOpen}
             />
         );
     }

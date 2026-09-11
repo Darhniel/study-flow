@@ -1,11 +1,13 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { getAuthenticatedUserOrThrow } from "./authHelpers";
+import { getAuthenticatedUserId, requireAuth } from "./authHelpers";
 
 export const list = query({
     args: {},
     handler: async (ctx) => {
-        const userId = await getAuthenticatedUserOrThrow(ctx);
+        const userId = await getAuthenticatedUserId(ctx);
+        if (!userId) return [];
+
         return await ctx.db
             .query("subjects")
             .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -17,7 +19,9 @@ export const list = query({
 export const get = query({
     args: { id: v.id("subjects") },
     handler: async (ctx, args) => {
-        const userId = await getAuthenticatedUserOrThrow(ctx);
+        const userId = await getAuthenticatedUserId(ctx);
+        if (!userId) return null;
+
         const subject = await ctx.db.get(args.id);
         if (!subject || subject.userId !== userId) return null;
         return subject;
@@ -27,7 +31,9 @@ export const get = query({
 export const listWithStats = query({
     args: {},
     handler: async (ctx) => {
-        const userId = await getAuthenticatedUserOrThrow(ctx);
+        const userId = await getAuthenticatedUserId(ctx);
+        if (!userId) return [];
+
         const subjects = await ctx.db
             .query("subjects")
             .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -64,7 +70,9 @@ export const listWithStats = query({
 export const count = query({
     args: {},
     handler: async (ctx) => {
-        const userId = await getAuthenticatedUserOrThrow(ctx);
+        const userId = await getAuthenticatedUserId(ctx);
+        if (!userId) return 0;
+
         const subjects = await ctx.db
             .query("subjects")
             .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -76,7 +84,7 @@ export const count = query({
 export const create = mutation({
     args: { name: v.string() },
     handler: async (ctx, args) => {
-        const userId = await getAuthenticatedUserOrThrow(ctx);
+        const userId = await requireAuth(ctx);
         const trimmed = args.name.trim();
         if (!trimmed) throw new Error("Subject name is required");
 
@@ -102,7 +110,7 @@ export const create = mutation({
 export const rename = mutation({
     args: { id: v.id("subjects"), name: v.string() },
     handler: async (ctx, args) => {
-        const userId = await getAuthenticatedUserOrThrow(ctx);
+        const userId = await requireAuth(ctx);
         const trimmed = args.name.trim();
         if (!trimmed) throw new Error("Subject name is required");
 
@@ -129,7 +137,7 @@ export const rename = mutation({
 export const remove = mutation({
     args: { id: v.id("subjects") },
     handler: async (ctx, args) => {
-        const userId = await getAuthenticatedUserOrThrow(ctx);
+        const userId = await requireAuth(ctx);
         const subject = await ctx.db.get(args.id);
         if (!subject || subject.userId !== userId) {
             throw new Error("Subject not found");

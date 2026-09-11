@@ -1,10 +1,10 @@
 import { query } from "./_generated/server";
-import { getAuthenticatedUser } from "./authHelpers";
+import { getAuthenticatedUserId } from "./authHelpers";
 
 export const viewer = query({
     args: {},
     handler: async (ctx) => {
-        const userId = await getAuthenticatedUser(ctx);
+        const userId = await getAuthenticatedUserId(ctx);
         if (!userId) {
             return null;
         }

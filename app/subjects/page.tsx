@@ -65,7 +65,10 @@ export default function SubjectsPage() {
                         ))}
                     </div>
                 ) : (
-                    <SubjectsList subjects={subjects} />
+                    <SubjectsList
+                        subjects={subjects}
+                        setCreateOpen={() => setCreateOpen(true)}
+                    />
                 )}
             </div>
 

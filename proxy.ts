@@ -6,7 +6,7 @@ import {
 } from "@convex-dev/auth/nextjs/server";
 
 const isSignInPage = createRouteMatcher(["/login", "/signup"]);
-const isProtectedRoute = createRouteMatcher(["/"]);
+const isProtectedRoute = createRouteMatcher(["/", "/notes", "/notes/(.*)", "/subjects"]);
 
 export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
   // Redirect authenticated users away from sign-in page
