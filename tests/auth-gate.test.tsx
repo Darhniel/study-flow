@@ -1,13 +1,14 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import "./__helpers__/convex-mocks";
 import "./__helpers__/auth-mocks";
-import { mockUseConvexAuth } from "./__helpers__/auth-mocks";
+import { mockUseConvexAuth } from "./__helpers__/auth-mocks"
 import { AuthGate } from "@/components/auth/auth-gate";
 
-const mockPush = jest.fn();
+const mockReplace = jest.fn();
 
 jest.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush }),
-  usePathname: () => "/dashboard",
+  useRouter: () => ({ push: jest.fn(), replace: mockReplace, refresh: jest.fn() }),
+  usePathname: () => "/notes",
 }));
 
 describe("AuthGate", () => {
@@ -15,7 +16,7 @@ describe("AuthGate", () => {
     jest.clearAllMocks();
   });
 
-  it("shows loading state when auth is loading", () => {
+  it("shows loading state while auth is loading", () => {
     mockUseConvexAuth.mockReturnValue({ isLoading: true, isAuthenticated: false });
     render(
       <AuthGate>
@@ -33,9 +34,9 @@ describe("AuthGate", () => {
       </AuthGate>
     );
 
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/login?redirect=%2Fdashboard");
-    });
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith("/login?redirect=%2Fnotes")
+    );
     expect(screen.queryByText("Protected content")).not.toBeInTheDocument();
   });
 
@@ -47,6 +48,16 @@ describe("AuthGate", () => {
       </AuthGate>
     );
     expect(screen.getByText("Protected content")).toBeInTheDocument();
-    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it("does not redirect while still loading", () => {
+    mockUseConvexAuth.mockReturnValue({ isLoading: true, isAuthenticated: false });
+    render(
+      <AuthGate>
+        <div>Protected content</div>
+      </AuthGate>
+    );
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 });

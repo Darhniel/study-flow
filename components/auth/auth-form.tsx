@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "@/lib/toast";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface AuthFormProps {
@@ -20,6 +20,9 @@ export function AuthForm({ mode }: AuthFormProps) {
   const { signIn } = useAuthActions();
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -28,7 +31,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      router.push("/")
+      router.replace(redirectTo)
     }
   }, [isAuthenticated, authLoading, router])
 
@@ -38,16 +41,18 @@ export function AuthForm({ mode }: AuthFormProps) {
     setLoading(true);
 
     try {
-      const formdata = new FormData();
-      formdata.append("email", email);
-      formdata.append("password", password);
+      const params: Record<string, string> = {
+        email,
+        password,
+        flow: mode,
+      };
       if (mode === "signUp" && name) {
-        formdata.append("name", name);
+        params.name = name;
       }
-      formdata.append("flow", mode);
-      await signIn("password", formdata);
+      await signIn("password", params);
       toast(mode === "signIn" ? "Welcome back!" : "Account created!");
-      router.push("/");
+      
+      window.location.href = redirectTo;
 
     } catch (err) {
       console.error("Authentication Error: ", err);

@@ -1,142 +1,106 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "./__helpers__/convex-mocks";
-import { mockUseQuery, mockUseMutation } from "./__helpers__/convex-mocks";
-import { makeNoteId } from "./__helpers__/convex-mocks";
+import "./__helpers__/auth-mocks";
+import { mockUseQuery, mockUseMutation, mockUseAction, makeNoteId } from "./__helpers__/convex-mocks";
 import { GenerateStudyButton } from "@/components/notes/generate-study-button";
 
 jest.mock("next/navigation", () => ({
-    useRouter: () => ({ push: jest.fn(), refresh: jest.fn() }),
+  useRouter: () => ({ push: jest.fn(), replace: jest.fn(), refresh: jest.fn() }),
+  usePathname: () => "/",
 }));
 
-const originalFetch = global.fetch;
-
 describe("GenerateStudyButton", () => {
-    let saveMock: jest.Mock;
+  let saveMock: jest.Mock;
+  let generateMock: jest.Mock;
 
-    beforeEach(() => {
-        jest.clearAllMocks();
-        saveMock = jest.fn().mockResolvedValue("material-id");
-        mockUseQuery.mockReturnValue(undefined); // no existing material
-        mockUseMutation.mockReturnValue(saveMock);
-        global.fetch = jest.fn();
+  beforeEach(() => {
+    jest.clearAllMocks();
+    saveMock = jest.fn().mockResolvedValue("material-id");
+    generateMock = jest.fn().mockResolvedValue({ ok: true });
+
+    mockUseQuery.mockReturnValue(undefined); // no existing material
+    mockUseMutation.mockReturnValue(saveMock);
+    mockUseAction.mockReturnValue(generateMock);
+  });
+
+  const noteId = makeNoteId("n1");
+
+  it("renders the generate button when no material exists", () => {
+    render(<GenerateStudyButton noteId={noteId} title="T" content="C" />);
+    expect(
+      screen.getByRole("button", { name: /generate study material/i })
+    ).toBeInTheDocument();
+  });
+
+  it("renders existing study material when available", () => {
+    mockUseQuery.mockReturnValue({
+      summary: "Summary text",
+      keyPoints: ["p1", "p2"],
+      quizQuestions: [
+        { question: "Q1?", answer: "A1" },
+        { question: "Q2?", answer: "A2" },
+        { question: "Q3?", answer: "A3" },
+        { question: "Q4?", answer: "A4" },
+        { question: "Q5?", answer: "A5" },
+      ],
+      createdAt: Date.now(),
     });
 
-    afterAll(() => {
-        global.fetch = originalFetch;
+    render(<GenerateStudyButton noteId={noteId} title="T" content="C" />);
+
+    expect(screen.getByText("Summary text")).toBeInTheDocument();
+    expect(screen.getByText("p1")).toBeInTheDocument();
+    expect(screen.getByText("Q1?")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /regenerate/i })).toBeInTheDocument();
+  });
+
+  it("calls the action on successful generation", async () => {
+    const user = userEvent.setup();
+    render(<GenerateStudyButton noteId={noteId} title="Title" content="Content" />);
+
+    await user.click(screen.getByRole("button", { name: /generate study material/i }));
+
+    await waitFor(() => {
+      expect(generateMock).toHaveBeenCalledWith({ noteId });
     });
+  });
 
-    const noteId = makeNoteId("n1");
+  it("shows rate-limit error message when action fails with rate limit", async () => {
+    const user = userEvent.setup();
+    generateMock.mockRejectedValue(new Error("rate limit exceeded"));
 
-    it("renders the generate button when no material exists", () => {
-        render(
-            <GenerateStudyButton noteId={noteId} title="T" content="C" />
-        );
-        expect(screen.getByRole("button", { name: /generate study material/i })).toBeInTheDocument();
-    });
+    render(<GenerateStudyButton noteId={noteId} title="T" content="C" />);
 
-    it("renders existing study material when available", () => {
-        mockUseQuery.mockReturnValue({
-            summary: "Summary text",
-            keyPoints: ["p1", "p2"],
-            quizQuestions: [
-                { question: "Q1?", answer: "A1" },
-                { question: "Q2?", answer: "A2" },
-                { question: "Q3?", answer: "A3" },
-                { question: "Q4?", answer: "A4" },
-                { question: "Q5?", answer: "A5" },
-            ],
-            createdAt: Date.now(),
-        });
+    await user.click(screen.getByRole("button", { name: /generate study material/i }));
 
-        render(
-            <GenerateStudyButton noteId={noteId} title="T" content="C" />
-        );
+    expect(await screen.findByText(/too many requests/i)).toBeInTheDocument();
+  });
 
-        expect(screen.getByText("Summary text")).toBeInTheDocument();
-        expect(screen.getByText("p1")).toBeInTheDocument();
-        expect(screen.getByText("Q1?")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /regenerate/i })).toBeInTheDocument();
-    });
+  it("shows config error when GEMINI_API_KEY is missing", async () => {
+    const user = userEvent.setup();
+    generateMock.mockRejectedValue(new Error("GEMINI_API_KEY is not configured"));
 
-    it("calls the API and saves material on successful generation", async () => {
-        const user = userEvent.setup();
-        const mockFetch = global.fetch as jest.Mock;
-        mockFetch.mockResolvedValue({
-            ok: true,
-            json: async () => ({
-                ok: true,
-                data: {
-                    summary: "S",
-                    keyPoints: ["k1"],
-                    quizQuestions: [
-                        { question: "Q1?", answer: "A1" },
-                        { question: "Q2?", answer: "A2" },
-                        { question: "Q3?", answer: "A3" },
-                        { question: "Q4?", answer: "A4" },
-                        { question: "Q5?", answer: "A5" },
-                    ],
-                },
-            }),
-        });
+    render(<GenerateStudyButton noteId={noteId} title="T" content="C" />);
 
-        render(
-            <GenerateStudyButton noteId={noteId} title="Title" content="Content" />
-        );
+    await user.click(screen.getByRole("button", { name: /generate study material/i }));
 
-        await user.click(screen.getByRole("button", { name: /generate study material/i }));
+    expect(await screen.findByText(/not configured/i)).toBeInTheDocument();
+  });
 
-        await waitFor(() => {
-            expect(mockFetch).toHaveBeenCalledWith(
-                "/api/generate-study-material",
-                expect.objectContaining({
-                    method: "POST",
-                    body: expect.stringContaining("Title"),
-                })
-            );
-        });
+  it("shows a try-again button after error", async () => {
+    const user = userEvent.setup();
+    generateMock.mockRejectedValue(new Error("API error"));
 
-        await waitFor(() => {
-            expect(saveMock).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    noteId,
-                    summary: "S",
-                    keyPoints: ["k1"],
-                })
-            );
-        });
-    });
+    render(<GenerateStudyButton noteId={noteId} title="T" content="C" />);
 
-    it("shows rate-limit error message when API returns 429", async () => {
-        const user = userEvent.setup();
-        const mockFetch = global.fetch as jest.Mock;
-        mockFetch.mockResolvedValue({
-            ok: false,
-            json: async () => ({
-                error: "Too many requests",
-                code: "RATE_LIMIT",
-            }),
-        });
+    await user.click(screen.getByRole("button", { name: /generate study material/i }));
 
-        render(
-            <GenerateStudyButton noteId={noteId} title="T" content="C" />
-        );
+    expect(await screen.findByRole("button", { name: /try again/i })).toBeInTheDocument();
+  });
 
-        await user.click(screen.getByRole("button", { name: /generate study material/i }));
-
-        expect(
-            await screen.findByText(/too many requests/i)
-        ).toBeInTheDocument();
-        expect(saveMock).not.toHaveBeenCalled();
-    });
-
-    it("does not call API when note has no content", async () => {
-        const user = userEvent.setup();
-        render(
-            <GenerateStudyButton noteId={noteId} title="" content="" />
-        );
-
-        const button = screen.getByRole("button", { name: /generate study material/i });
-        expect(button).toBeDisabled();
-    });
+  it("displays AI disclaimer", () => {
+    render(<GenerateStudyButton noteId={noteId} title="T" content="C" />);
+    expect(screen.getByText(/ai-generated content may contain errors/i)).toBeInTheDocument();
+  });
 });

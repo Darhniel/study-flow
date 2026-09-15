@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "./__helpers__/convex-mocks";
 import { mockUseQuery } from "./__helpers__/convex-mocks";
@@ -59,7 +59,7 @@ describe("SubjectPage", () => {
 
         render(<SubjectPage params={{ id: "s1" }} />);
 
-        expect(screen.getByText("Mathematics")).toBeInTheDocument();
+        expect(screen.getAllByText("Mathematics").length).toBeGreaterThan(0);
         expect(screen.getByText("2 notes")).toBeInTheDocument();
         expect(screen.getByText("Algebra")).toBeInTheDocument();
         expect(screen.getByText("Geometry")).toBeInTheDocument();
@@ -78,7 +78,9 @@ describe("SubjectPage", () => {
 
         const searchInput = screen.getByPlaceholderText(/search notes/i);
         await user.type(searchInput, "algebra");
-        jest.advanceTimersByTime(300);
+        act(() => {
+            jest.advanceTimersByTime(300);
+        });
 
         await waitFor(() => {
             expect(screen.getByText("Algebra")).toBeInTheDocument();

@@ -30,13 +30,20 @@ export default function NotesPage() {
     const filteredNotes = useMemo(() => {
         if (!notes) return [];
         const trimmed = debouncedSearch.trim().toLowerCase();
-        const base = trimmed
-            ? notes.filter(
+        let base = notes;
+        if (trimmed) {
+            base = base.filter(
                 (n) =>
                     n.title.toLowerCase().includes(trimmed) ||
                     n.content.toLowerCase().includes(trimmed)
-            )
-            : notes;
+            );
+        }
+        if (status) {
+            base = base.filter((n) => n.status === status);
+        }
+        if (subjectId) {
+            base = base.filter((n) => n.subjectId === subjectId);
+        }
         return base.map((n) => {
             const subject = n.subjectId
                 ? subjects.find((s) => s._id === n.subjectId)
@@ -51,7 +58,7 @@ export default function NotesPage() {
                 updatedAt: n.updatedAt,
             };
         });
-    }, [notes, debouncedSearch, subjects]);
+    }, [notes, debouncedSearch, status, subjectId, subjects]);
 
     return (
         <motion.div

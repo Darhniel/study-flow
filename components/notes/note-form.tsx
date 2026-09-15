@@ -54,7 +54,10 @@ export function NoteForm({ initial, subjects, editing, setEditing }: NoteFormPro
     const validate = (): boolean => {
         const next: FormErrors = {};
         if (!title.trim()) next.title = "Title is required";
-        if (!content.trim()) next.content = "Content is required";
+        const hasAttachment = !removeAttachment && (!!file || !!initial?.attachmentId);
+        if (!content.trim() && !hasAttachment) {
+            next.content = "Content or an attachment is required";
+        }
         setErrors(next);
         return Object.keys(next).length === 0;
     };

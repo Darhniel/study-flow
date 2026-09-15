@@ -1,1 +1,2 @@
-npx @convex-dev/auth
+app-shell.test.tsx
+auth-gate.test.tsx

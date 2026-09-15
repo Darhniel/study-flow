@@ -16,8 +16,8 @@ export function AuthGate({ children, redirectTo = "/login" }: AuthGateProps) {
     const pathname = usePathname();
 
     useEffect(() => {
-        if (!isLoading && !isAuthenticated) {
-            router.replace(redirectTo)
+        if (!isLoading && !isAuthenticated && pathname !== "/login" && pathname !== "/signup") {
+            router.replace(`${redirectTo}?redirect=${encodeURIComponent(pathname)}`)
         }
     }, [isLoading, isAuthenticated, router, pathname]);
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, BookMarked, Settings, LayoutDashboard, X } from "lucide-react";
+import { BookOpen, BookMarked, LayoutDashboard, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
 import { useSidebar } from "@/lib/hooks/use-sidebar";
@@ -74,9 +74,6 @@ export function Sidebar() {
                 <div className="border-t p-4 shrink-0">
                     <UserMenu />
                 </div>
-                {/* <div className="border-t p-4 text-xs text-muted-foreground shrink-0">
-                    StudyFlow · v0.1
-                </div> */}
             </aside>
 
             {/* Mobile sidebar */}

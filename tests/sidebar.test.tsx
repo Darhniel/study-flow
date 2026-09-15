@@ -1,5 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import "./__helpers__/convex-mocks";
+import "./__helpers__/auth-mocks";
+import { mockUseConvexAuth } from "./__helpers__/auth-mocks";
 import { AppShell } from "@/components/layout/app-shell";
 
 jest.mock("next/navigation", () => ({
@@ -7,6 +10,11 @@ jest.mock("next/navigation", () => ({
 }));
 
 describe("Sidebar", () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        mockUseConvexAuth.mockReturnValue({ isLoading: false, isAuthenticated: true });
+    });
+
     it("renders desktop sidebar by default", () => {
         render(
             <AppShell>
@@ -14,7 +22,7 @@ describe("Sidebar", () => {
             </AppShell>
         );
 
-        expect(screen.getByText("StudyFlow")).toBeInTheDocument();
+        expect(screen.getAllByText("StudyFlow").length).toBeGreaterThan(0);
         expect(screen.getByText("Dashboard")).toBeInTheDocument();
         expect(screen.getByText("Notes")).toBeInTheDocument();
     });

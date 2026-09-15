@@ -17,11 +17,11 @@ import { fadeIn } from "@/lib/animations";
 import { SubjectDialog } from "@/components/subjects/subject-dialog";
 
 interface SubjectPageProps {
-    params: Promise<{ id: string }>;
+    params: Promise<{ id: string }> | { id: string };
 }
 
 export default function SubjectPage({ params }: SubjectPageProps) {
-    const resolvedParams = use(params);
+    const resolvedParams = params instanceof Promise ? use(params) : params;
     const subjectId = resolvedParams.id as Id<"subjects">;
     const subject = useQuery(api.subjects.get, { id: subjectId });
     const notes = useQuery(api.notes.list, { subjectId });
@@ -72,7 +72,7 @@ export default function SubjectPage({ params }: SubjectPageProps) {
         return (
             <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="rounded-lg border p-10 text-center">
-                    <p className="text-sm text-muted-foreground">Subject not found.</p>
+                    <p className="text-sm text-muted-foreground">Subject not found</p>
                     <Button className="mt-4" variant="outline">
                         <Link href="/subjects">Back to subjects</Link>
                     </Button>

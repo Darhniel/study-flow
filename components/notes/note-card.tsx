@@ -90,7 +90,7 @@ export function NoteCard({ note, onDeleted }: NoteCardProps) {
                         </p>
 
                         <div className="mt-4 flex items-center gap-2">
-                            <Button variant="outline" size="sm" onClick={handleToggle} aria-label="Toggle status">
+                            <Button variant="outline" size="sm" onClick={handleToggle}>
                                 {note.status === "completed" ? (
                                     <>
                                         <Circle className="h-3.5 w-3.5" />
