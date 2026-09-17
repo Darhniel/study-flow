@@ -19,9 +19,15 @@ interface AuthFormProps {
 export function AuthForm({ mode }: AuthFormProps) {
   const { signIn } = useAuthActions();
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+  console.log("isAuthenticated: ", isAuthenticated);
+  console.log("AuthLoading: ", authLoading);
+  console.log("Mode: ", mode);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/";
+  // const redirectTo = searchParams.get("redirect") || "/";
+  const rawRedirect = searchParams.get("redirect") || "/";
+  const redirectTo = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/";
+
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,7 +57,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       }
       await signIn("password", params);
       toast(mode === "signIn" ? "Welcome back!" : "Account created!");
-      
+
       window.location.href = redirectTo;
 
     } catch (err) {
@@ -166,14 +172,14 @@ export function AuthForm({ mode }: AuthFormProps) {
             {mode === "signIn" ? (
               <>
                 Don&apos;t have an account?{" "}
-                <Link href="/signup" className="text-primary hover:underline">
+                <Link href={`/signup?redirect=${encodeURIComponent(redirectTo)}`} className="text-primary hover:underline">
                   Sign up
                 </Link>
               </>
             ) : (
               <>
                 Already have an account?{" "}
-                <Link href="/login" className="text-primary hover:underline">
+                <Link href={`/login?redirect=${encodeURIComponent(redirectTo)}`} className="text-primary hover:underline">
                   Sign in
                 </Link>
               </>

@@ -16,7 +16,8 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
   
   // Redirect unauthenticated users to sign-in
   if (isProtectedRoute(request) && !(await convexAuth.isAuthenticated())) {
-    return nextjsMiddlewareRedirect(request, "/login");
+    const cameFrom = request.nextUrl.pathname + request.nextUrl.search;
+    return nextjsMiddlewareRedirect(request, `/login?redirect=${encodeURIComponent(cameFrom)}`);
   }
 });
 
