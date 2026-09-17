@@ -78,8 +78,7 @@ export function GenerateStudyButton({
             await generateMaterial({ noteId })
             toast("Study material generated successfully");
         } catch (err) {
-            const message =
-                err instanceof Error ? err.message : "Failed to generate study material";
+            const message = err instanceof Error ? err.message : "Failed to generate study material";
             let friendlyMessage = "We couldn't reach the AI service. Please check your connection and try again.";
 
             if (message.includes("GEMINI_API_KEY")) {
