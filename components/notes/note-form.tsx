@@ -176,7 +176,9 @@ export function NoteForm({ initial, subjects, editing, setEditing }: NoteFormPro
                         />
                         {initial?.attachmentName && !file && !removeAttachment && (
                             <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                                <span>Current file: {initial.attachmentName}</span>
+                                <span>
+                                    Current file: {initial.attachmentName}
+                                </span>
                                 <button
                                     type="button"
                                     className="text-destructive underline hover:text-destructive/80"
@@ -225,7 +227,11 @@ export function NoteForm({ initial, subjects, editing, setEditing }: NoteFormPro
                         <Button type="submit" disabled={submitting}>
                             {submitting ? "Saving…" : initial ? "Save changes" : "Create note"}
                         </Button>
-                        <Button type="button" variant="outline" onClick={handleCancel}>
+                        <Button
+                            type="button" 
+                            variant="outline" 
+                            onClick={handleCancel}
+                        >
                             Cancel
                         </Button>
                     </div>

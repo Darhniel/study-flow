@@ -22,9 +22,7 @@ export function Providers({ children }: ProvidersProps) {
 
     return (
         <ConvexAuthNextjsProvider client={convex}>
-            <>
-                {children}
-            </>
+            {children}
         </ConvexAuthNextjsProvider>
     );
 }

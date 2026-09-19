@@ -27,7 +27,7 @@ export function MobileNav() {
                         <Menu className="h-5 w-5" />
                     </button>
                     <div className="min-w-0 flex-1">
-                        <Logo linkTo="" />
+                        <Logo linkTo="/" />
                     </div>
                 </motion.header>
             )}

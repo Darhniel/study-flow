@@ -36,6 +36,8 @@ export function RecentNotes({ notes }: RecentNotesProps) {
         );
     }
 
+    console.log("Notes Details: \n",notes);
+
     return (
         <Card>
             <CardHeader>
@@ -55,7 +57,9 @@ export function RecentNotes({ notes }: RecentNotesProps) {
                                 className="flex items-center justify-between py-3 hover:text-primary transition-colors"
                             >
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-medium truncate">{note.title}</p>
+                                    <p className="text-sm font-medium truncate">
+                                        {note.title}
+                                    </p>
                                     <p className="text-xs text-muted-foreground">
                                         {note.subjectName ?? "No subject"} · Updated {formatDate(note.updatedAt)}
                                     </p>

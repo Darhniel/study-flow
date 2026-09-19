@@ -19,9 +19,6 @@ interface AuthFormProps {
 export function AuthForm({ mode }: AuthFormProps) {
   const { signIn } = useAuthActions();
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
-  console.log("isAuthenticated: ", isAuthenticated);
-  console.log("AuthLoading: ", authLoading);
-  console.log("Mode: ", mode);
   const router = useRouter();
   const searchParams = useSearchParams();
   // const redirectTo = searchParams.get("redirect") || "/";

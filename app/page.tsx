@@ -3,9 +3,7 @@
 import { motion } from "framer-motion";
 import { useQuery, } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useRouter } from "next/navigation";
 import { useConvexAuth } from "@convex-dev/auth/react";
-import { useEffect } from "react";
 import { BookMarked, CheckCircle2, Circle, FolderOpen } from "lucide-react";
 import { StatsCard } from "@/components/notes/stats-card";
 import { RecentNotes } from "@/components/dashboard/recent-notes";
@@ -16,18 +14,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { fadeIn, staggerContainer } from "@/lib/animations";
 
 export default function DashboardPage() {
-  const { isLoading, isAuthenticated } = useConvexAuth();
-  const router = useRouter();
+  const { isLoading } = useConvexAuth();
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
-
-  // useEffect(() => {
-  //   if (!isLoading && !isAuthenticated) {
-  //     router.push("/signin");
-  //   }
-  // }, [isLoading, isAuthenticated, router]);
 
   return (
     <DashboardContent />
@@ -106,7 +97,11 @@ function DashboardContent() {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+          transition={{ 
+            delay: 0.35, 
+            duration: 0.3, 
+            ease: [0.25, 0.1, 0.25, 1] 
+          }}
         >
           <RecentAIMaterial
             notes={notesWithMaterial.map((n) => ({

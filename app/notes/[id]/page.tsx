@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, use } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation } from "convex/react";
@@ -35,8 +34,7 @@ export default function NotePage({ params }: NotePageProps) {
     const [editing, setEditing] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
 
-    const subjectName =
-        note?.subjectId ? subjects.find((s) => s._id === note.subjectId)?.name : undefined;
+    const subjectName = note?.subjectId ? subjects.find((s) => s._id === note.subjectId)?.name : undefined;
 
     if (note === undefined) {
         return (
@@ -53,7 +51,9 @@ export default function NotePage({ params }: NotePageProps) {
             <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
                 <Card>
                     <CardContent className="p-10 text-center">
-                        <p className="text-sm text-muted-foreground">Note not found.</p>
+                        <p className="text-sm text-muted-foreground">
+                            Note not found.
+                        </p>
                         <Button className="mt-4" variant="outline">
                             <Link href="/notes">Back to notes</Link>
                         </Button>
@@ -93,7 +93,9 @@ export default function NotePage({ params }: NotePageProps) {
                 animate="visible"
                 className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8"
             >
-                <h1 className="text-2xl font-semibold tracking-tight">Edit note</h1>
+                <h1 className="text-2xl font-semibold tracking-tight">
+                    Edit note
+                </h1>
                 <div className="mt-6">
                     <NoteForm
                         subjects={subjects}

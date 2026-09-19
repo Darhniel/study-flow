@@ -31,9 +31,13 @@ export function AppShell({ children }: AppShellProps) {
       {shouldRenderContent ? (
         <div className="min-h-screen bg-background">
           <Sidebar />
-          <div className="lg:pl-60 transition-all duration-300">
+          <div 
+            className={`${sidebarOpen ? "lg:pl-60" : "lg:pl-0"} transition-all duration-300`}
+          >
             <MobileNav />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1">
+              {children}
+            </main>
           </div>
         </div>
       ) : (

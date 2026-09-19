@@ -13,7 +13,9 @@ export function Logo({ className, linkTo = "/" }: LogoProps) {
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
                 <BookOpen className="h-4 w-4" />
             </div>
-            <span className="text-base font-semibold tracking-tight">StudyFlow</span>
+            <span className="text-base font-semibold tracking-tight">
+                StudyFlow
+            </span>
         </div>
     );
 

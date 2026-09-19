@@ -44,7 +44,7 @@ export function Sidebar() {
                     <Logo />
                     {/* <UserMenu /> */}
                 </div>
-                <nav className="flex-1 overflow-y-auto px-3 py-4">
+                <nav className="flex-[0.75] overflow-y-auto px-3 py-4">
                     <ul className="space-y-1">
                         {navItems.map((item) => {
                             const isActive =
