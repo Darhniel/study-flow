@@ -8,6 +8,7 @@ import { api } from "@/convex/_generated/api";
 import { User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import {useRouter} from "next/navigation";
 
 export function UserMenu() {
     const { isLoading, isAuthenticated } = useConvexAuth();
@@ -21,6 +22,7 @@ export function UserMenu() {
 
 function UserMenuContent() {
     const { signOut } = useAuthActions();
+    const router = useRouter();
     // const [open, setOpen] = useState(true);
     const user = useQuery(api.users.viewer);
 
@@ -44,7 +46,7 @@ function UserMenuContent() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute left-0 top-full m-2 z-50 w-48 rounded-md border bg-background shadow-lg"
+                    className="absolute left-0 top-full m-2 z-50 w-full lg:w-48 rounded-md border bg-background shadow-lg"
                     role="menu"
                 >
                     <div className="p-3 border-b">
@@ -56,7 +58,7 @@ function UserMenuContent() {
                     <button
                         onClick={() => {
                             signOut();
-                            // setOpen(false);
+                            router.refresh();
                         }}
                         className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors cursor-pointer"
                         role="menuitem"
